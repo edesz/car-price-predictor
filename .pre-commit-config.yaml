@@ -35,6 +35,10 @@ repos:
       name: Ensure files end in a newline
       language_version: python3.7
       verbose: true
+      exclude: |
+          (?x)(
+              ^executed_notebooks/
+          )
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.1.0
     hooks:
