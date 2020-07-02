@@ -46,7 +46,7 @@ Demographics data for US, based on zipcode, using Python library [`uszipcode`](h
      - 15 pages of IDs for SEA from `Listings_IDs_20191008_AUS_16_to_29.txt` (which contains 30 pages for AUS)
 
 ## [Analysis](#analysis)
-Analysis will be performed using linear regression. Details are included in the various notebooks in the root directory.
+Analysis will be performed using linear models in Python. Details are included in the various notebooks in the root directory.
 
 ## [Usage](#usage)
 1. Clone this repository
