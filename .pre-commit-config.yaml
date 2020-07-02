@@ -1,0 +1,58 @@
+repos:
+  - repo: https://github.com/ambv/black
+    rev: 19.10b0
+    hooks:
+    - id: black
+      name: Ensure black code formatting
+      language_version: python3.7
+      args: ["--line-length=79", "--diff"]
+      verbose: true
+      exclude: |
+          (?x)(
+              __init__.py
+          )
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.3
+    hooks:
+    - id: flake8
+      name: Ensure flake8 compliance
+      args: ['--ignore=W605,C901']
+      language_version: python3.7
+      verbose: true
+  - repo: https://github.com/timothycrosley/isort
+    rev: 4.3.21
+    hooks:
+    - id: isort
+      name: Ensure python modules are sorted
+      language_version: python3.7
+      # args: ["--check-only"]
+      verbose: true
+      files: \.(py)$
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.1.0
+    hooks:
+    - id: end-of-file-fixer
+      name: Ensure files end in a newline
+      language_version: python3.7
+      verbose: true
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.1.0
+    hooks:
+    - id: trailing-whitespace
+      name: Ensure trailing whitespace is removed
+      language_version: python3.7
+      args: ["--markdown-linebreak-ext=md"]
+      verbose: true
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.6.2
+    hooks:
+    - id: bandit
+      name: Ensure compliance with security checks
+      language_version: python3.7
+      args: ["--quiet", "--recursive"]
+      verbose: true
+      files: \.(py)$
+      exclude: |
+          (?x)(
+              __init__.py
+          )

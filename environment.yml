@@ -1,0 +1,26 @@
+name: car-price-predictor-linear-regression
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - pip
+  - pip:
+    - jupyter
+    - jupyterlab
+    - nb_black
+    - numpy
+    - pandas
+    - dask[dataframe]
+    - scipy
+    - statsmodels
+    - scikit-learn
+    - matplotlib
+    - seaborn
+    - yellowbrick
+    - altair
+    - uszipcode
+    - tqdm
+    - lxml
+    - fake-useragent
+    - beautifulsoup4
+    - selenium
