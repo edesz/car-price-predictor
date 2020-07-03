@@ -1,6 +1,6 @@
 # [Car Price Predictor - Linear Regression](#car-price-predictor---linear-regression)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edesz/car-price-predictor-linear-regression/master?urlpath=lab) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/car-price-predictor-linear-regression/master/5_experiments_in_regression.ipynb) [![Azure Notebooks](https://notebooks.azure.com/launch.png)](https://notebooks.azure.com/import/gh/car-price-predictor-linear-regression) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/) ![CI](https://github.com/edesz/car-price-predictor-linear-regression/workflows/CI/badge.svg) [![Build Status](https://dev.azure.com/elsdes3/elsdes3/_apis/build/status/edesz.car-price-predictor?branchName=master)](https://dev.azure.com/elsdes3/elsdes3/_build/latest?definitionId=25&branchName=master) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/mit)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edesz/car-price-predictor-linear-regression/master?urlpath=lab) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/car-price-predictor-linear-regression/master/5_experiments_in_regression.ipynb) [![Azure Notebooks](https://notebooks.azure.com/launch.png)](https://notebooks.azure.com/import/gh/car-price-predictor-linear-regression) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/) ![CI](https://github.com/edesz/car-price-predictor-linear-regression/workflows/CI/badge.svg) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/mit)
 
 ## [Table of Contents](#table-of-contents)
 1. [Project Idea](#project-idea)
@@ -108,9 +108,6 @@ Analysis will be performed using linear models in Python. Details are included i
     │   └── *.py                      <- Scripts to use in analysis for pre-processing, training, etc.
     ├── papermill_runner.py           <- Python functions that execute system shell commands.
     └── tox.ini                       <- tox file with settings for running tox; see tox.testrun.org
-
-## [Notes](#notes)
-1. Failing CI build is at step where data must be retrieved from cloud blob storage per [1](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-python), [2](https://medium.com/@syed.sohaib/working-with-azure-blob-storage-2fbc8cfd3f7), [3](https://stackoverflow.com/questions/61935564/issues-reading-azure-blob-csv-into-python-pandas-df/61994538#61994538). Error is due to failed attempt at reading from/connecting to service and could be due to bug [here](https://github.com/microsoft/azure-pipelines-tasks/issues/13124).
 
 --------
 
