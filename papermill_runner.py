@@ -80,9 +80,12 @@ def run_notebooks(
     Usage
     -----
     > import os
+    > PROJ_ROOT_DIR = os.path.abspath(os.getcwd())
+    > one_dict_nb_name = "a.ipynb
+    > one_dict = {"a": 1}
     > run_notebook(
           notebook_list=[
-              os.path.join(os.getcwd(), five_dict_nb_name)
+              {os.path.join(PROJ_ROOT_DIR, one_dict_nb_name): one_dict}
           ]
       )
     """
