@@ -12,4 +12,3 @@ jobs:
           python-version: '3.7'
       - run: pip install tox
       - run: tox -e lint
-      - run: tox -e ci
