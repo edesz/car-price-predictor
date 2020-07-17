@@ -104,7 +104,7 @@ Analysis will be performed using linear models in Python. Details are included i
     ├── requirements.txt              <- packages required to execute all Jupyter notebooks interactively (not from CI)
     ├── setup.py                      <- makes project pip installable (pip install -e .) so `src` can be imported
     ├── src                           <- Source code for use in this project.
-    │   ├── __init__.py               <- Makes {{cookiecutter.module_name}} a Python module
+    │   ├── __init__.py               <- Makes src a Python module
     │   └── *.py                      <- Scripts to use in analysis for pre-processing, training, etc.
     ├── papermill_runner.py           <- Python functions that execute system shell commands.
     └── tox.ini                       <- tox file with settings for running tox; see tox.testrun.org
