@@ -14,6 +14,10 @@ import scipy.stats as stats
 import seaborn as sns
 import sklearn.metrics as mr
 import sklearn.model_selection as ms
+import sklearn.preprocessing as pp
+import statsmodels.api as sm
+from matplotlib import colors as mcolors
+from matplotlib.ticker import FuncFormatter
 from scipy.stats import norm
 from sklearn.base import BaseEstimator
 from yellowbrick.model_selection import LearningCurve
@@ -197,7 +201,7 @@ def plot_multiple_histograms(
     gs = fig.add_gridspec(2, len(cols_to_plot), hspace=hspace, wspace=wspace)
     for k, col in enumerate(cols_to_plot):
         ax1 = fig.add_subplot(gs[0, k], yticklabels=[])
-        sns.distplot(X[col], kde=show_kde, ax=ax1)
+        sns.histplot(X[col], kde=show_kde, ax=ax1)
         for tick in ax1.xaxis.get_major_ticks():
             tick.set_pad(-5)
         for tick in ax1.yaxis.get_major_ticks():
@@ -217,7 +221,7 @@ def plot_multiple_histograms(
 
         if not X_trans.empty:
             ax2 = fig.add_subplot(gs[1, k], yticklabels=[])
-            sns.distplot(X_trans[col], ax=ax2, kde=True)
+            sns.histplot(X_trans[col], ax=ax2, kde=True)
             for tick in ax2.xaxis.get_major_ticks():
                 tick.set_pad(-5)
             for tick in ax2.yaxis.get_major_ticks():
@@ -235,7 +239,7 @@ def plot_multiple_histograms(
                 alpha=0.3,
             )
     curr_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
-    filename = f"pairplot__{curr_datetime}.png"
+    filename = f"multi_histograms__{curr_datetime}.png"
     if not (savefig / filename).is_file() and save_plot:
         fig.savefig(savefig / filename, bbox_inches="tight", dpi=300)
 
@@ -261,7 +265,7 @@ def plot_coef_plot(
     for tick in ax.xaxis.get_major_ticks():
         tick.set_pad(-5)
     curr_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
-    filename = f"pairplot__{curr_datetime}.png"
+    filename = f"coefs__{curr_datetime}.png"
     if not (savefig / filename).is_file() and save_fig:
         fig.savefig(savefig / filename, bbox_inches="tight", dpi=300)
 
@@ -346,10 +350,12 @@ def plot_qq(
     savefig: Path = Path().cwd() / "reports" / "figures",
 ) -> None:
     """Plot Q-Q (quantile-quantile) plot"""
-    fig, ax = plt.subplots(figsize=(15, 12))
-    stats.probplot(res, dist="norm", plot=plt)
-    plt.figure(figsize=(15, 12))
-    ax.set_title("Normal Q-Q plot")
+    fig, ax = plt.subplots(figsize=fig_size)
+    sm.ProbPlot(data=res, dist=stats.distributions.norm, fit=True).qqplot(
+        line="s", ax=ax
+    )
+    ax.get_lines()[0].set_markersize(10)
+    ax.set_title("Normal Q-Q plot", fontsize=16)
     curr_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
     filename = f"qq_plot__{curr_datetime}.png"
     if not (savefig / filename).is_file() and save_fig:
@@ -416,6 +422,8 @@ def show_yb_prediction_error(
     estimator,
     X,
     y,
+    axis_label_fontsize=20,
+    axis_tick_label_pad=5,
     fig_size: Tuple = (15, 12),
     save_fig: bool = False,
     savefig: Path = Path().cwd() / "reports" / "figures",
@@ -433,8 +441,27 @@ def show_yb_prediction_error(
     visualizer.fit(X, y)
     visualizer.score(X, y)
     visualizer.finalize()
-    ax.set_xlabel("Observed Price ($)")
-    ax.set_ylabel("Predicted Price ($)")
+    ax.get_xaxis().set_major_formatter(
+        FuncFormatter(lambda x, p: format(int(x), ","))
+    )
+    ax.get_yaxis().set_major_formatter(
+        FuncFormatter(lambda x, p: format(int(x), ","))
+    )
+    ax.legend(frameon=False)
+    ax.set_xlabel(
+        "Observed Price ($)",
+        fontsize=axis_label_fontsize,
+    )
+    ax.set_ylabel(
+        "Predicted Price ($)",
+        fontsize=axis_label_fontsize,
+    )
+    ax.tick_params(which="both", direction="out", pad=axis_tick_label_pad)
+    ax.set_title(
+        f"Prediction Error for {type(estimator.named_steps['reg']).__name__}",
+        loc="center",
+        fontweight="bold",
+    )
     curr_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
     filename = f"yb_pred_error__{curr_datetime}.png"
     if not (savefig / filename).is_file() and save_fig:
@@ -501,7 +528,9 @@ def plot_multi_feature_target(
     marker_opacity,
     marker_linewidth,
     color_by_col,
-    legend_vertical_offset=-5,
+    legend_offset=-5,
+    save_fig: bool = False,
+    savefig: Path = Path().cwd() / "reports" / "figures",
     fig_size: Tuple = (250, 300),
 ) -> alt.Chart:
     chart = (
@@ -516,7 +545,8 @@ def plot_multi_feature_target(
         )
         .encode(
             alt.X(
-                alt.repeat("column"),
+                alt.repeat("row"),
+                # title="",
                 type="quantitative",
                 axis=alt.Axis(
                     labels=True,
@@ -526,8 +556,8 @@ def plot_multi_feature_target(
                 ),
             ),
             alt.Y(
-                alt.repeat("row"),
-                title="",
+                alt.repeat("column"),
+                # title="",
                 type="quantitative",
                 axis=alt.Axis(
                     labels=True,
@@ -539,22 +569,26 @@ def plot_multi_feature_target(
             color=alt.Color(
                 color_by_col,
                 legend=alt.Legend(
-                    columns=df[color_by_col].nunique(),
-                    orient="top",
-                    titleOrient="left",
-                    offset=legend_vertical_offset,
+                    # columns=df[color_by_col].nunique(),
+                    # orient="top",
+                    # titleOrient="left",
+                    offset=legend_offset,
                     titleFontSize=title_font_size,
                 ),
             ),
             tooltip=tooltip_list,
         )
         .properties(width=fig_size[0], height=fig_size[1])
-        .repeat(row=rows, column=columns)
+        .repeat(row=rows, column=columns, spacing=0)
         .configure_axis(
             labelFontSize=label_font_size, titleFontSize=title_font_size
         )
         .interactive()
     )
+    curr_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
+    filename = f"multi_feature_plot__{curr_datetime}.html"
+    if not (savefig / filename).is_file() and save_fig:
+        chart.save(str(savefig / filename), format="html")
     return chart
 
 
@@ -572,6 +606,8 @@ def plot_single_feature_target(
     color_scheme,
     title_horizontal_offset=45,
     title_vertical_offset=-3,
+    save_fig: bool = False,
+    savefig: Path = Path().cwd() / "reports" / "figures",
     fig_size: Tuple = (300, 250),
 ) -> alt.Chart:
     figs = {}
@@ -651,6 +687,10 @@ def plot_single_feature_target(
             labelFontSize=label_font_size, titleFontSize=title_font_size
         )
     )
+    curr_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
+    filename = f"single_feature_plot__{curr_datetime}.html"
+    if not (savefig / filename).is_file() and save_fig:
+        combined_chart.save(str(savefig / filename), format="html")
     return combined_chart
 
 
@@ -742,10 +782,14 @@ def plot_side_by_side_bar_box(
     pos_bar_color="blue",
     box_size=25,
     box_color="blue",
+    split_type="train",
     title_font_size=12,
     label_font_size=12,
     title_horizontal_offset=115,
     title_vertical_offset=-3,
+    show_bar_chart=True,
+    save_fig: bool = False,
+    savefig: Path = Path().cwd() / "reports" / "figures",
     fig_size: Tuple = (350, 200),
 ):
     lin_coeffs = (
@@ -782,7 +826,9 @@ def plot_side_by_side_bar_box(
         .properties(width=fig_size[0], height=fig_size[1])
     )
     perm_imp = (
-        alt.Chart(df_perm_imp, title="Permutation importances (test set)")
+        alt.Chart(
+            df_perm_imp, title=f"Permutation importances ({split_type} set)"
+        )
         .mark_boxplot(color=box_color, size=box_size)
         .encode(
             x=alt.X(
@@ -810,16 +856,197 @@ def plot_side_by_side_bar_box(
         )
         .properties(width=fig_size[0], height=fig_size[1])
     )
-    combined_chart = (
-        alt.hconcat(lin_coeffs, perm_imp)
-        .configure_title(
-            anchor="start",
-            dx=title_horizontal_offset,
-            offset=title_vertical_offset,
-            fontSize=title_font_size,
-        )
-        .configure_axis(
-            labelFontSize=label_font_size, titleFontSize=title_font_size
-        )
+    if show_bar_chart:
+        combined_chart = alt.hconcat(lin_coeffs, perm_imp)
+    else:
+        combined_chart = perm_imp
+    combined_chart = combined_chart.configure_title(
+        anchor="start",
+        dx=title_horizontal_offset,
+        offset=title_vertical_offset,
+        fontSize=title_font_size,
+    ).configure_axis(
+        labelFontSize=label_font_size, titleFontSize=title_font_size
     )
+    curr_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
+    filename = f"bar_box_plot_{split_type}__{curr_datetime}.html"
+    if not (savefig / filename).is_file() and save_fig:
+        combined_chart.save(str(savefig / filename), format="html")
     return combined_chart
+
+
+def show_3d_plot(df, xcol, ycol, zcol, ptitle, fig_size=(8, 8)):
+    cmap = mcolors.LinearSegmentedColormap.from_list(
+        name="green_white_red",
+        colors=[(1, 0, 0), (1, 1.0, 1), (0, 1, 0)],
+        N=len(df) - 1,
+    )
+    fig = plt.figure(figsize=fig_size)
+    ax = fig.add_subplot(111, projection="3d")
+    _ = ax.scatter(
+        df[xcol],
+        df[ycol],
+        df[zcol],
+        c=df[0],
+        cmap=cmap,
+        marker="o",
+        vmin=df[0].min(),
+        vmax=df[0].max(),
+    )
+    ax.grid()
+    ax.set_xlabel("Under-Prediction Penalty")
+    ax.set_ylabel("Over-Prediction Penalty")
+    ax.set_zlabel("Within threshold Reward")
+    ax.set_title(ptitle, loc="left", fontweight="bold")
+
+
+def plot_single_feature_multi_transformations(
+    series,
+    colname,
+    hspace=0.075,
+    save_fig: bool = False,
+    savefig: Path = Path().cwd() / "reports" / "figures",
+    fig_size=(12, 16),
+):
+    fig = plt.figure(figsize=fig_size)
+    grid = plt.GridSpec(3, 1, hspace=hspace)
+    ax1 = fig.add_subplot(grid[0, 0])
+    ax2 = fig.add_subplot(grid[1, 0])
+    ax3 = fig.add_subplot(grid[2, 0])
+    sns.histplot(
+        series,
+        ax=ax1,
+        kde=True,
+        color="steelblue",
+        label="Raw",
+        alpha=0.75,
+    )
+    sns.histplot(
+        np.log(series),
+        ax=ax2,
+        kde=True,
+        label="Log",
+        color="darkred",
+        alpha=0.45,
+    )
+    sns.histplot(
+        pp.PowerTransformer(method="yeo-johnson")
+        .fit_transform(series.to_frame())
+        .squeeze(),
+        ax=ax3,
+        alpha=0.4,
+        color="red",
+        kde=True,
+        label="Yeo-Johnson",
+    )
+    sns.histplot(
+        pp.PowerTransformer(method="box-cox")
+        .fit_transform(series.to_frame())
+        .squeeze(),
+        ax=ax3,
+        alpha=0.4,
+        color="yellow",
+        ls="-.",
+        kde=True,
+        label="Box-Cox",
+    )
+    sns.histplot(
+        pp.QuantileTransformer(output_distribution="normal")
+        .fit_transform(series.to_frame())
+        .squeeze(),
+        ax=ax3,
+        alpha=0.35,
+        kde=True,
+        color="blue",
+        label="Quantile",
+    )
+    ax1.set_title(
+        f"(Count) Histogram of {colname}", loc="left", fontweight="bold"
+    )
+    for ax in [ax1, ax2, ax3]:
+        ax.set_xlabel(None)
+        ax.legend()
+        ax.set_ylabel(None)
+        ax.tick_params(pad=-5, axis="both", labelsize=20)
+    curr_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
+    filename = f"single_feature_multi_transformations__{curr_datetime}.png"
+    if not (savefig / filename).is_file() and save_fig:
+        fig.savefig(savefig / filename, bbox_inches="tight", dpi=300)
+
+
+def plot_scatter_plot_grouped(
+    df,
+    x,
+    y,
+    color_by_col,
+    x_title,
+    y_title,
+    ptitle_cname,
+    save_fig: bool = False,
+    savefig: Path = Path().cwd() / "reports" / "figures",
+    fig_size=(10, 10),
+):
+    fig, ax = plt.subplots(figsize=fig_size)
+    sns.scatterplot(
+        x=x,
+        y=y,
+        hue=color_by_col,
+        palette=["purple", "darkorange"],
+        data=df,
+        ax=ax,
+        s=80,
+    )
+    ax.set_xlabel(x_title)
+    ax.set_ylabel(None)
+    ax.legend(
+        loc="upper left",
+        ncol=2,
+        bbox_to_anchor=(0.75, 1.06),
+        handletextpad=0.025,
+        columnspacing=0.1,
+    )
+    ax.get_xaxis().set_major_formatter(
+        FuncFormatter(lambda x, p: format(int(x), ","))
+    )
+    ax.get_yaxis().set_major_formatter(
+        FuncFormatter(lambda x, p: format(int(x), ","))
+    )
+    ptitle = f"{y_title}, by {ptitle_cname}"
+    ax.set_title(ptitle, loc="left", fontweight="bold")
+    curr_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
+    filename = f"{y_title}_by_{x_title}__{curr_datetime}.png"
+    if not (savefig / filename).is_file() and save_fig:
+        fig.savefig(savefig / filename, bbox_inches="tight", dpi=300)
+
+
+def plot_multiple_histograms_v2(
+    ss,
+    snames,
+    colors,
+    colname,
+    save_fig: bool = False,
+    savefig: Path = Path().cwd() / "reports" / "figures",
+    fig_size=(8, 6),
+):
+    fig, ax = plt.subplots(figsize=fig_size)
+    for s, sname, color in zip(ss, snames, colors):
+        sns.histplot(
+            s,
+            ax=ax,
+            alpha=0.45,
+            kde=True,
+            color=color,
+            label=sname,
+        )
+    ax.set_title(
+        f"(Count) Histogram of {colname}", loc="left", fontweight="bold"
+    )
+    ax.legend()
+    ax.get_xaxis().set_major_formatter(
+        FuncFormatter(lambda x, p: format(int(x), ","))
+    )
+    ax.set_xlabel("Price ($)")
+    curr_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
+    filename = f"target_histogram__{curr_datetime}.png"
+    if not (savefig / filename).is_file() and save_fig:
+        fig.savefig(savefig / filename, bbox_inches="tight", dpi=300)
