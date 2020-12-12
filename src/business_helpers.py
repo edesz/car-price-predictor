@@ -27,18 +27,17 @@ def calculate_cost(
         within_threshold = pd.Series(y_test, index=fit_residual.index).loc[
             preds_res.abs() <= threshold
         ]
-        under_est_pen = (
+        under_est_pen_frac = (
             under_estimates.abs() * relative_pens["under-estimate-penalty"]
-        ).reset_index(drop=True)
-        over_est_pen = (
+        )
+        under_est_pen = (under_est_pen_frac / 100).reset_index(drop=True)
+        over_est_pen_frac = (
             over_estimates.abs() * relative_pens["over-estimate-penalty"]
-        ).reset_index(drop=True)
-        thresh_pen = within_threshold * relative_pens["equality"].reset_index(
-            drop=True
         )
-        preds_res_penalized = (
-            (under_est_pen / 100) + (over_est_pen / 100) + (thresh_pen / 100)
-        )
+        over_est_pen = (over_est_pen_frac / 100).reset_index(drop=True)
+        thresh_pen_frac = within_threshold * relative_pens["equality"]
+        thresh_pen = (thresh_pen_frac / 100).reset_index(drop=True)
+        preds_res_penalized = under_est_pen + over_est_pen + thresh_pen
         d_costs_to_client[m_type] = {
             "median": preds_res_penalized.median(),
             "sum": preds_res_penalized.sum(),
